@@ -6,7 +6,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Monodoc</title>
+    <title><% = Global.GetTitle (Request) %> | MonoDoc</title>
     <link rel="stylesheet" type="text/css" href="css/main.css" media="all" />
 	<link type="text/css" rel="stylesheet" href="css/sidebar.css"/>
 	<link rel="stylesheet" type="text/css" href="css/bootstrap.css" />

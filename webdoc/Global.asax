@@ -116,6 +116,11 @@ public static string CreateTreeBootFragment ()
 	return fragment.ToString ();
 }
 
+public static string GetTitle (HttpRequest request)
+{
+	return help_tree.GetTitle (request.QueryString ["link"]);
+}
+
 public static string GetContentFrame (HttpRequest request)
 {
 	// Docs get shown from monodoc.ashx
