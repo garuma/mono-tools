@@ -92,7 +92,7 @@ var add_native_browser_link = function () {
 		var id = contentDiv.attr ('id').replace (':Summary', '');
 		var h2 = contentDiv.children ('h2').first ();
 		if (h2.prev ().attr ('class') != 'native-browser')
-		h2.before ('<a class="btn btn-small" href="mdoc://' + encodeURIComponent (id) + '"><img src="images/native-browser-icon.png" /> Open in Native Browser</a>');
+		h2.before ('<a class="btn btn-small" href="mdoc://' + encodeURIComponent (id) + '"><img src="img/native-browser-icon.png" /> Open in Native Browser</a>');
 	}
 };
 add_native_browser_link ();
