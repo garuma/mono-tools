@@ -75,7 +75,8 @@ update_tree = function () {
 	var tree_path = $('#content_frame').contents ().find ('meta[name=TreePath]');
 	if (tree_path.length > 0) {
 	    var path = tree_path.attr ('value');
-	    tree.ExpandFromPath (path);
+		if (path != '')
+			tree.ExpandFromPath (path);
 	}
 };
 
@@ -88,7 +89,7 @@ var update_iframe_height = function () {
 
 var add_native_browser_link = function () {
 	var contentDiv = $('#content_frame').contents ().find ('div[class=Content]').first ();
-	if (contentDiv.length > 0) {
+	if (contentDiv.length > 0 && typeof contentDiv.attr ('id') === 'string') {
 		var id = contentDiv.attr ('id').replace (':Summary', '');
 		var h2 = contentDiv.children ('h2').first ();
 		if (h2.prev ().attr ('class') != 'native-browser')
@@ -97,7 +98,6 @@ var add_native_browser_link = function () {
 };
 add_native_browser_link ();
 
-update_tree ();
 content_frame.load (update_tree);
 content_frame.load (update_iframe_height);
 content_frame.load (add_native_browser_link);
