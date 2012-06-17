@@ -83,7 +83,7 @@ var update_iframe_height = function () {
 	var iframe = this;
 	var iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
     if (iframeWin.document.body) 
-        $(this).height (iframeWin.document.documentElement.scrollHeight || iframeWin.document.body.scrollHeight);
+        $(this).height ((iframeWin.document.documentElement.scrollHeight || iframeWin.document.body.scrollHeight) + 40);
 };
 
 var add_native_browser_link = function () {
@@ -92,7 +92,7 @@ var add_native_browser_link = function () {
 		var id = contentDiv.attr ('id').replace (':Summary', '');
 		var h2 = contentDiv.children ('h2').first ();
 		if (h2.prev ().attr ('class') != 'native-browser')
-		h2.before ('<a class="native-browser" href="mdoc://' + encodeURIComponent (id) + '"><span class="native-icon"><img src="images/native-browser-icon.png" /></span>Open in Native Browser</a>');
+		h2.before ('<a class="btn btn-small" href="mdoc://' + encodeURIComponent (id) + '"><img src="images/native-browser-icon.png" /> Open in Native Browser</a>');
 	}
 };
 add_native_browser_link ();
