@@ -16,7 +16,7 @@
 	<div id="banner" class="navbar">
 	  <div class="navbar-inner">
 		<div class="container">
-		  <a class="brand" href="/">
+		  <a class="brand" style="color: #ddd;" href="/">
 			Mono Documentation
 		  </a>
 		  <form class="navbar-search pull-right">
