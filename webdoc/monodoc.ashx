@@ -309,7 +309,6 @@ namespace Mono.Website.Handlers
 			ctx.Response.Write (@"
 <html>
 <head>
-		<link type='text/css' rel='stylesheet' href='common.css' media='all' title='Default style' />
         <meta name='TreePath' value='");
 			ctx.Response.Write (tree_path);
 			ctx.Response.Write (@"' />
@@ -389,7 +388,7 @@ s.parentNode.insertBefore(ga, s);
 				ctx.Response.Write (hs.InlineJavaScript);
 				ctx.Response.Write ("</script>\n");
 			}
-			ctx.Response.Write (@"</head><body onLoad='load()'>");
+			ctx.Response.Write (@"</head><link type='text/css' rel='stylesheet' href='css/common.css' media='all' title='Default style' /><body onLoad='load()'>");
 
 			// Set up object variable, as it's required by the MakeLink delegate
 			requestPath=ctx.Request.Path;

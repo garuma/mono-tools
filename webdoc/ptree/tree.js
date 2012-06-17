@@ -16,12 +16,12 @@ function PTree ()
 	this.strActionBase = "";
 	this.strSrcBase = "";
 	this.strTargetDefault = "";
-	this.strImagesBase = "images/";
-	this.strImageExt = ".png";
 	this.eltSelected = null;
-	this.nImageWidth = 18;
-	this.nImageHeight = 18;
 	this.onClickCallback = null;
+	this.imgClassClosed = 'tree-node-closed';
+	this.imgClassOpened = 'tree-node-opened';
+	this.nImageWidth = 16;
+	this.nImageHeight = 16;
 
 	this.CreateItemFromXML = function (oNode, fLast, eltParent)
 	{
@@ -36,107 +36,88 @@ function PTree ()
 	{
 		var _this = this;
 
-		var eltDiv = document.createElement ("DIV");
+		var eltDiv = $('<div/>');
 		if (eltParent == null)
-			eltDiv.tree_fRoot = true;
+			eltDiv.data ('tree_fRoot', true);
 
 		if (fLast)
-			eltDiv.tree_fLast = true;
+			eltDiv.data ('tree_fLast', true);
 
 		if (strAction)
-			eltDiv.tree_action = strAction;
+			eltDiv.data ('tree_action', strAction);
 
 		if (strSrc != null)
-			eltDiv.tree_src = strSrc;
+			eltDiv.data ('tree_src', strSrc);
 
-		var eltSpan = document.createElement ("SPAN");
-		eltSpan.className = "tree-label";
+		var eltSpan = $('<span/>', { style: 'margin-left: 0px' });
+		eltSpan.addClass ('tree-label');
 
 		if (eltParent)
 		{
-			eltDiv.className = "tree-node-collapsed";
+			eltDiv.addClass ('tree-node-collapsed');
 
 			// this node's tree icon
-			var eltIcon = new Image ();
-			eltIcon.width = this.nImageWidth;
-			eltIcon.height = this.nImageHeight;
+			var eltIcon = $('<' + this.imgTagName + '/>');
 			if (strSrc)
-				eltIcon.onclick = function () { _this.LoadNode (this); }
-			eltIcon.src = this.GetIconSrc (eltDiv, true);
-			eltSpan.appendChild (eltIcon);
+				eltIcon.on ('click', function () { _this.LoadNode ($(this)); });
+			eltIcon.addClass (this.imgClassClosed);
+			eltIcon.appendTo (eltSpan);
 
 			// parent's tree icons
-			var eltIconLast = eltIcon;
+			//var eltIconLast = eltIcon;
 			var eltParentDiv = eltParent;
 			while (!this.IsRootDiv (eltParentDiv))
 			{
-				var eltIcon = new Image ();
-				eltIcon.width = this.nImageWidth;
-				eltIcon.height = this.nImageHeight;
-				if (this.IsLastDiv (eltParentDiv))
-					eltIcon.src = this.strImagesBase + "blank" + this.strImageExt;
-				else
-					eltIcon.src = this.strImagesBase + "I" + this.strImageExt;
-
-				eltSpan.insertBefore (eltIcon, eltIconLast);
-				eltIconLast = eltIcon;
-				eltParentDiv = this.GetParentDiv (eltParentDiv);
+				eltIcon.parent ().css ('margin-left', '+=16');
+				eltParentDiv = eltParentDiv.parent ('div');
 			}
 		}
 		else
 		{
-			eltDiv.className = "tree-node";
-			//document.body.onkeydown = function () { return _this.onKeyDown (); }
+			eltDiv.addClass ('tree-node');
 		}
 
 		// description
-		var eltText = document.createTextNode (strText);
 		var eltDescription;
 
 		if (strAction)
 		{
-			eltDescription = document.createElement ("a");
+			eltDescription = $('<a/>');
 			if (strAction.indexOf ('http://') === 0)
-				eltDescription.href = strAction;
+				eltDescription.attr ('href', strAction);
 			else
-				eltDescription.href = this.strActionBase + strAction;
-			eltDescription.title = strText;
+				eltDescription.attr ('href', this.strActionBase + strAction);
+			eltDescription.attr ('title', strText);
 			if (strTarget)
-				eltDescription.target = strTarget;
+				eltDescription.attr ('target', strTarget);
 			else if (this.strTargetDefault)
-				eltDescription.target = this.strTargetDefault;
-			eltDescription.appendChild (eltText);
+				eltDescription.attr ('target', this.strTargetDefault);
+			eltDescription.html (strText);
 			var parent = this;
-			eltDescription.onclick = function (e) {
+			eltDescription.click (function (e) {
 				_this.SelectNode (eltDiv);
 				if (parent.onClickCallback) {
-					if (!e)
-						e = window.event;
-					e.cancelBubble = true;
-					e.returnValue = false;
-					if (e.stopPropagation) {
-						e.stopPropagation ();
-						e.preventDefault ();
-					}
+					e.stopPropagation ();
+					e.preventDefault ();
 					parent.onClickCallback(strAction);
 				}
-			}
-			eltDescription.onmouseover = function () { this.blur (); }
-			eltDescription.onmouseup = function () { this.blur (); }
+			});
+			eltDescription.mouseover (function () { this.blur (); });
+			eltDescription.mouseup (function () { this.blur (); });
 		}
 		else
 		{
-			eltDescription = document.createElement ("span");
-			eltDescription.className = "tree-label";
-			eltDescription.innerHTML = strText;
+			eltDescription = $('<span/>');
+			eltDescription.addClass ('tree-label');
+			eltDescription.html (strText);
 		}
 
-		eltSpan.appendChild (eltDescription);
-		eltDiv.appendChild (eltSpan);
+		eltSpan.append (eltDescription);
+		eltDiv.append (eltSpan);
 
 		// append this node to its parent
 		if (eltParent)
-			eltParent.appendChild (eltDiv);
+			eltParent.append (eltDiv);
 		else
 			this.SelectNode (eltDiv);
 
@@ -145,17 +126,16 @@ function PTree ()
 
 	this.SelectNode = function (eltDiv)
 	{
-		if (this.eltSelected != eltDiv)
-		{
-			if (eltDiv)
-			{
+		if (this.IsRootDiv (eltDiv))
+			return;
+		if (this.eltSelected == null || !this.eltSelected.is (eltDiv)) {
+			if (eltDiv) {
 				var eltLabel = this.GetSpan (eltDiv);
-				eltLabel.className = "tree-label-selected";
+				eltLabel.children ('a').addClass ('label label-info');
 			}
-			if (this.eltSelected)
-			{
+			if (this.eltSelected) {
 				var eltLabel = this.GetSpan (this.eltSelected);
-				eltLabel.className = "tree-label";
+				eltLabel.children ('a').removeClass ('label label-info');
 			}
 			this.eltSelected = eltDiv;
 		}
@@ -164,80 +144,62 @@ function PTree ()
 	this.LoadNode = function (eltIcon)
 	{
 		var eltDiv = this.GetDivFromIcon (eltIcon);
-		eltIcon.onclick = null;
+		eltIcon.off ('click');
 
-		var eltLoading = this.CreateItem (eltDiv, "<img src=\"../images/searching.gif\"/>Loading...", null, null, true);
-		eltLoading.className = '';
+		var eltLoading = this.CreateItem (eltDiv, "<img src=\"../img/searching.gif\"/>Loading...", null, null, true);
+		eltLoading.attr ('class', '');
+		eltLoading.find ('i').remove ();
 
-		var xmlHttp = XmlHttp.create();
-		xmlHttp.open ("GET", this.strSrcBase + eltDiv.tree_src, true);	// async
+		var url = this.strSrcBase + eltDiv.data ('tree_src');
 		var _this = this;
-		xmlHttp.onreadystatechange = function () { _this.onReadyStateChange (xmlHttp, eltIcon, eltLoading); }
-		setTimeout (function () { xmlHttp.send (null); }, 10);
-	}
+		$.get (url, function (data) {
+			var doc = data.documentElement;
+			
+			var children = doc.childNodes;
+			var cChildren = children.length;
 
-	this.onReadyStateChange = function (xmlHttp, eltIcon, eltLoading)
-	{
-		if (xmlHttp.readyState != 4)
-			return;
-		// XML loaded
-		var eltDiv = this.GetDivFromIcon (eltIcon);
+			for (var iNode = 0; iNode < cChildren; iNode ++)
+				_this.CreateItemFromXML (children[iNode], iNode == cChildren - 1, eltDiv);
 
-		try
-		{
-			var doc = xmlHttp.responseXML;
-			var root = doc.documentElement;
+			eltLoading.remove ();
 
-			var nodes = root.childNodes;
-			var cNodes = nodes.length;
+			if (_this.eltSelected == eltLoading)
+				_this.SelectNode (_this.GetFirstChild (eltDiv));
 
-			for (var iNode = 0; iNode < cNodes; iNode ++)
-				this.CreateItemFromXML (nodes [iNode], iNode == cNodes-1, eltDiv);
-
-			eltDiv.removeChild (eltLoading);
-
-			if (this.eltSelected == eltLoading)
-				this.SelectNode (this.GetFirstChild (eltDiv));
-
-			eltIcon.src = this.GetIconSrc (eltDiv, false);
-		}
-		catch (e)
-		{
-			this.SetText (eltLoading, "Failed to load topic");
-		}
-		eltDiv.className = "tree-node";
-		var _this = this;
-		eltIcon.onclick = function () { _this.onClickMinus (this); }
+			eltIcon.attr ('class', _this.GetIconClassName (eltDiv, false));
+			eltDiv.attr ('class', 'tree-node');
+			eltIcon.on ('click', function () { _this.onClickIcon ($(this)); });
+		});
 	}
 
 	this.ExpandFromPath = function (path)
 	{
 		var root = $('.tree-node').first ();
 		var elements = path.split('@');
+		if (elements.length == 0)
+			return;
 
-		var thisSave = this;
+		var _this = this;
 		var finish = function (node, i, opened) {
-			node = $(node);
 			if (!opened) {
 				node.attr('class', 'tree-node');
-				var icon = node.children('span').children('img:nth-child(' + (i + 1) + ')');
-				icon[0].onclick = function () { thisSave.onClickMinus (this); };
-				icon.attr('src', thisSave.GetIconSrc (node[0], false));
+				var icon = _this.GetIconFromDiv (node);
+				icon.off ('click');
+				icon.attr('class', _this.GetIconClassName (node, false));
+				icon.on ('click', function () { _this.onClickIcon ($(this)); });
 			}
 			root = node;
 			if (i == elements.length - 1) {
-				thisSave.SelectNode (node[0]);
-				var container = $('#contents').parent ();
-				container.scrollTop (node[0].offsetTop - 100);
+				_this.SelectNode (node);
 			}
 		};
 		var recurse = function (i) {
 			if (i >= elements.length)
 				return;
-			var node = root.children ('div')[elements[i]];
+			var node = root.children ('div').eq (elements[i]);
 			// Tree already loaded
-			if ($(node).find ('div').first ().length == 0) {
-				var url = thisSave.strSrcBase + elements.slice(0, i + 1).join('@');
+			if (node.find ('div').first ().length == 0) {
+				var url = _this.strSrcBase + elements.slice(0, i + 1).join('@');
 				$.get (url, function (data) {
 					var doc = data.documentElement;
 
@@ -245,7 +207,7 @@ function PTree ()
 					var cChildren = children.length;
 
 					for (var iNode = 0; iNode < cChildren; iNode ++)
-						thisSave.CreateItemFromXML (children[iNode], iNode == cChildren - 1, node)
+						_this.CreateItemFromXML (children[iNode], iNode == cChildren - 1, node)
 
 					// We finish node creation by opening up its tree like clicking would normally do
 					finish (node, i, false);
@@ -259,22 +221,17 @@ function PTree ()
 		recurse (0);
 	}
 
-	this.onClickPlus = function (eltIcon)
+	this.onClickIcon = function (eltIcon)
 	{
 		var eltDiv = this.GetDivFromIcon (eltIcon);
-		eltDiv.className = "tree-node";
-		eltIcon.src = this.GetIconSrc (eltDiv, false);
-		var _this = this;
-		eltIcon.onclick = function () { _this.onClickMinus (this); }
-	}
-
-	this.onClickMinus = function (eltIcon)
-	{
-		var eltDiv = this.GetDivFromIcon (eltIcon);
-		eltDiv.className = "tree-node-collapsed";
-		eltIcon.src = this.GetIconSrc (eltDiv, true);
-		var _this = this;
-		eltIcon.onclick = function () { _this.onClickPlus (this); }
+		var className = eltIcon.attr ('class');
+		if (className == this.imgClassClosed) {
+			eltDiv.attr ('class', 'tree-node');
+			eltIcon.attr ('class', this.GetIconClassName (eltDiv, false));
+		} else if (className == this.imgClassOpened) {
+			eltDiv.attr ('class', 'tree-node-collapsed');
+			eltIcon.attr ('class', this.GetIconClassName (eltDiv, true));
+		}
 	}
 
 	this.onKeyDown = function (event)
@@ -287,7 +244,7 @@ function PTree ()
 		{
 		case 13: // return
 			var eltLink = eltSelect.firstChild.lastChild;
-			if (eltSelect.tree_action)
+			if (eltSelect.data ('tree_action'))
 				window.open (eltLink.href, eltLink.target);
 			this.SelectNode (eltSelect);
 			return false;	// don't EnsureVisible
@@ -327,7 +284,7 @@ function PTree ()
 			if (!fRoot)
 			{
 				if (this.IsExpanded (eltSelect))
-					this.onClickMinus (this.GetIconFromDiv (eltSelect));
+					this.onClickIcon (this.GetIconFromDiv (eltSelect));
 				else
 					eltSelect = this.GetParentDiv (eltSelect);
 			}
@@ -340,7 +297,7 @@ function PTree ()
 				if (this.IsExpanded (eltSelect))
 					eltSelect = eltChild;
 				else if (eltChild != null)
-					this.onClickPlus (this.GetIconFromDiv (eltSelect));
+					this.onClickIcon (this.GetIconFromDiv (eltSelect));
 				else
 					this.LoadNode (this.GetIconFromDiv (eltSelect));
 			}
@@ -358,82 +315,69 @@ function PTree ()
 
 	this.SetText = function (eltDiv, strText)
 	{
-		var eltText = eltDiv.lastChild;
-		eltText.nodeValue = strText;
+		eltDiv.text (strText);
 	}
 
-	this.GetIconSrc = function (eltDiv, fPlus)
+	this.GetIconClassName = function (eltDiv, fPlus)
 	{
-		var strIconSrc = this.IsLastDiv (eltDiv) ? "L" : "T";
-		if (eltDiv.tree_src != null)
-			strIconSrc += fPlus ? "plus" : "minus";
-		return this.strImagesBase + strIconSrc + this.strImageExt;
+		return fPlus ? this.imgClassClosed : this.imgClassOpened;
 	}
 
 	this.GetDivFromIcon = function (eltIcon)
 	{
-		return eltIcon.parentNode.parentNode;
+		return eltIcon.parent ('span').parent ('div');
 	}
 
 	this.GetIconFromDiv = function (eltDiv)
 	{
-		return eltDiv.firstChild.lastChild.previousSibling;
+		return eltDiv.children ('span').children (this.imgTagName + ':last')
 	}
 
 	this.GetFirstChild = function (eltDiv)
 	{
-		return eltDiv.firstChild.nextSibling;
+		return eltDiv.children ('span').children ().first ();
 	}
 
 	this.GetSpan = function (eltDiv)
 	{
-		return eltDiv.firstChild;
+		return eltDiv.children ('span');
 	}
 
 	this.GetLabel = function (eltDiv)
 	{
-		return eltDiv.firstChild.lastChild;
-	}
-
-	this.GetParentDiv = function (eltDiv)
-	{
-		if (this.IsRootDiv (eltDiv))
-			return null;
-		return eltDiv.parentNode;
+		return eltDiv.find ('a').first ();
 	}
 
 	this.HasChildren = function (eltDiv)
 	{
-		return eltDiv.tree_src || this.IsRootDiv (eltDiv);
+		return (typeof eltDiv.data ('tree_src') != 'undefined') || this.IsRootDiv (eltDiv);
 	}
 
 	this.IsLastDiv = function (eltDiv)
 	{
-		return eltDiv.tree_fLast;
+		return typeof eltDiv.data ('tree_fLast') != 'undefined';
 	}
 
 	this.IsRootDiv = function (eltDiv)
 	{
-		return Boolean (eltDiv.tree_fRoot);
+		return eltDiv.length == 0 || typeof eltDiv.data ('tree_fRoot') != 'undefined';
 	}
 
 	this.IsExpanded = function (eltDiv)
 	{
-		return eltDiv.className != "tree-node-collapsed";
+		return !eltDiv.hasClass ('tree-node-collapsed');
 	}
 
 	this.IsFirstChild = function (eltDiv)
 	{
-		var fFirst =
-			eltDiv.previousSibling &&
-			eltDiv.previousSibling.tagName != "DIV";
-		return fFirst;
+		return eltDiv.prev ('div').count == 0
 	}
 
 	this.EnsureVisible = function (elt)
 	{
 		var x = 0;
 		var y = 0;
+		elt = elt[0];
 		var parent = elt;
 		while (parent != null)
 		{

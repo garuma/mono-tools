@@ -116,6 +116,23 @@ public static string CreateTreeBootFragment ()
 	return fragment.ToString ();
 }
 
+public static string GetContentFrame (HttpRequest request)
+{
+	// Docs get shown from monodoc.ashx
+	string monodocUrl = "monodoc.ashx";
+	string defaultParams = "?link=root:";
+	NameValueCollection qStringParams = request.QueryString;
+
+	// If no querystring params, show root link
+	if (!qStringParams.HasKeys ())
+		return monodocUrl + defaultParams;
+	// else, build query for the content frame
+	string nQueryString = monodocUrl + "?";
+	foreach (string key in qStringParams)
+		nQueryString += HttpUtility.UrlEncode(key) + "=" + HttpUtility.UrlEncode (qStringParams[key]);
+	return nQueryString;
+}
+
 public static SearchableIndex GetSearchIndex ()
 {
 	if (search_index != null)

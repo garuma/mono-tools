@@ -1,6 +1,7 @@
 var search_input = $('#fsearch');
 var search_window = $('#fsearch_window');
 var content_frame = $('#content_frame');
+var companion = $('#fsearch_companion');
 var page_link = $('#pageLink');
 var lis = null;
 var page_top_offset = $('#main_part').offset().top;
@@ -14,24 +15,39 @@ change_page = function (pagename) {
 page_link.attr ('href', document.location.search);
 
 var is_shown = false;
+
+var hide_companion = function () {
+	companion.hide ();
+	companion.removeClass ('in');
+};
+
 var hide = function () {
 	if (!is_shown)
 		return;
-	search_window.css ({'display' : 'none', 'opacity' : 0});
+	search_window.hide ();
+	hide_companion ();
 	is_shown = false;
 };
+
 var show = function () {
 	if (is_shown)
 		return;
-    search_window.css ({'display' : 'block', 'height' : 'auto', 'opacity' : 1.0, 'width': search_input.width() + 'px', 'top': page_top_offset + 'px' });
+	var pos = $.extend({}, search_input.offset(), {
+			height: search_input[0].offsetHeight
+	});
+    search_window.css ({ 'width': search_input.outerWidth() + 'px', top: pos.top + pos.height + 15, left: pos.left });
+	search_window.show (100);
 	is_shown = true;
 };
+
+search_window.mouseleave (hide_companion);
 
 search_input.blur (function () {
 	window.setTimeout (hide, 200);
 	if (search_input.val ().length == 0)
 		search_input.css ('width', '19em');
 });
+
 search_input.focus (function () {
 	search_input.css ('width', '29em');
 	if (search_window.text().length > 0 && search_input.val().length > 0)
@@ -60,22 +76,26 @@ search_input.keyup (function (event) {
 		$.each (data, function(key, val) {
 			var item = val.name;
 			var url = val.url.replace (/[<>]/g, function (c) { return c == '<' ? '{' : '}'; });
-			items.push('<li><a href="#" onclick="change_page(\''+url+'\')" title="'+(val.fulltitle == '' ? val.name : val.fulltitle)+'">' + item + '</a></li>');
+			items.push('<li><a href="#" onclick="change_page(\''+url+'\')" data-title="'+(val.fulltitle == '' ? val.name : val.fulltitle)+'">' + item + '</a></li>');
 		});
 
-		var uls = $('<ul/>', { html: items.join (''), 'style': 'list-style-type:none; margin: 0; padding:0' });
-		lis = uls.children ('li');
-		var companion = $('#fsearch_companion');
+		search_window.html (items.join (''));
+		lis = search_window.children ('li');
 		lis.hover (function () {
 			var childA = $(this).children('a');
+			$(this).addClass ('active');
 			var offset = childA.offset ();
-			companion.css ({ 'top': offset.top + 'px', 'right': $('html').outerWidth () - offset.left + 10, 'display': 'block'});
-			companion.text(childA.attr ('title'));
+			companion.css ({
+				'top': offset.top - (companion.outerHeight () - companion.height ()) + 5,
+				'right': $('html').outerWidth () - offset.left + 10
+			});
+			companion.children ('.tooltip-inner').text (childA.data ('title'));
+			companion.addClass ('in');
+			companion.show ('fast');
 		}, function () {
-			companion.css ('display', 'none');
+			$(this).removeClass ('active');
 		});
-		search_window.empty();
-		uls.appendTo ('#fsearch_window');
+
 		show ();
 	};
 	$.getJSON ('monodoc.ashx?fsearch=' + $(this).val (), callback);
@@ -91,7 +111,7 @@ document.getElementById ('fsearch').onsearch = function () {
 search_input.keydown (function (event) {
 	if (lis == null)
 		return;
-	var selected = lis.filter('.selected');
+	var selected = lis.filter('.active');
 	var newSelection = null;
 	$('#fsearch_companion').css ('display', 'none');
 
@@ -127,9 +147,9 @@ search_input.keydown (function (event) {
 	}
 
 	if (newSelection != null) {
-		newSelection.addClass ('selected');
+		newSelection.addClass ('active');
 		if (selected != null) {
-			selected.removeClass ('selected');
+			selected.removeClass ('active');
 			selected.mouseleave();
 		}
 		newSelection.mouseenter();
