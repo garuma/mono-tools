@@ -83,7 +83,7 @@ var update_iframe_height = function () {
 	var iframe = this;
 	var iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
     if (iframeWin.document.body) 
-        $(this).height ((iframeWin.document.documentElement.scrollHeight || iframeWin.document.body.scrollHeight) + 40);
+        $(this).height ((iframeWin.document.documentElement.scrollHeight || iframeWin.document.body.scrollHeight) + 60);
 };
 
 var add_native_browser_link = function () {
