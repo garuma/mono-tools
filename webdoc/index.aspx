@@ -40,12 +40,13 @@
 	</div>
 	<div id="main_part" class="container-fluid">
 	  <div class="row-fluid">
-		<div class="span3">
+		<div class="span2">
 		  <div id="contents" class="activeTab">
-			<div id="contentList"></div>
+            <div id="detailList" class='tree-container'><div class="tree-node"><span class="tree-label"><a href="?link=root:" title="Documentation List">Detail</a></span></div></div>
+			<div id="contentList" class='tree-container'></div>
 		  </div>
 		</div>
-		<div class="span9">
+		<div class="span10">
 		  <iframe id="content_frame" src=""></iframe>
 		</div>
 	  </div>

@@ -36,7 +36,7 @@ function PTree ()
 	{
 		var _this = this;
 
-		var eltDiv = $('<div/>');
+		var eltDiv = $('<div/>', { 'class': 'tree-node'} );
 		if (eltParent == null)
 			eltDiv.data ('tree_fRoot', true);
 
@@ -49,12 +49,12 @@ function PTree ()
 		if (strSrc != null)
 			eltDiv.data ('tree_src', strSrc);
 
-		var eltSpan = $('<span/>', { style: 'margin-left: 0px' });
+		var eltSpan = $('<span/>');
 		eltSpan.addClass ('tree-label');
 
 		if (eltParent)
 		{
-			eltDiv.addClass ('tree-node-collapsed');
+			eltDiv.addClass ('collapsed');
 
 			// this node's tree icon
 			var eltIcon = $('<' + this.imgTagName + '/>');
@@ -71,10 +71,6 @@ function PTree ()
 				eltIcon.parent ().css ('margin-left', '+=16');
 				eltParentDiv = eltParentDiv.parent ('div');
 			}
-		}
-		else
-		{
-			eltDiv.addClass ('tree-node');
 		}
 
 		// description
@@ -114,10 +110,11 @@ function PTree ()
 
 		eltSpan.append (eltDescription);
 		eltDiv.append (eltSpan);
+		eltDiv.append ($('<div/>', { 'class': 'tree-node-children' }));
 
 		// append this node to its parent
 		if (eltParent)
-			eltParent.append (eltDiv);
+			eltParent.children ('.tree-node-children').append (eltDiv);
 		else
 			this.SelectNode (eltDiv);
 
@@ -158,6 +155,7 @@ function PTree ()
 			var children = doc.childNodes;
 			var cChildren = children.length;
 
+			var eltDivChildren = eltDiv.children ('.tree-node-children').hide ();
 			for (var iNode = 0; iNode < cChildren; iNode ++)
 				_this.CreateItemFromXML (children[iNode], iNode == cChildren - 1, eltDiv);
 
@@ -167,14 +165,15 @@ function PTree ()
 				_this.SelectNode (_this.GetFirstChild (eltDiv));
 
 			eltIcon.attr ('class', _this.GetIconClassName (eltDiv, false));
-			eltDiv.attr ('class', 'tree-node');
+			eltDiv.removeClass ('collapsed');
 			eltIcon.on ('click', function () { _this.onClickIcon ($(this)); });
+			eltDivChildren.fadeIn ('fast');
 		});
 	}
 
 	this.ExpandFromPath = function (path)
 	{
-		var root = $('.tree-node').first ();
+		var root = $('#contentList .tree-node').first ();
 		var elements = path.split('@');
 		if (elements.length == 0)
 			return;
@@ -182,7 +181,7 @@ function PTree ()
 		var _this = this;
 		var finish = function (node, i, opened) {
 			if (!opened) {
-				node.attr('class', 'tree-node');
+				node.removeClass ('collapsed');
 				var icon = _this.GetIconFromDiv (node);
 				icon.off ('click');
 				icon.attr('class', _this.GetIconClassName (node, false));
@@ -196,9 +195,9 @@ function PTree ()
 		var recurse = function (i) {
 			if (i >= elements.length)
 				return;
-			var node = root.children ('div').eq (elements[i]);
+			var node = root.children ('div.tree-node-children').children ('div.tree-node').eq (elements[i]);
 			// Tree already loaded
-			if (node.find ('div').first ().length == 0) {
+			if (node.find ('div.tree-node').first ().length == 0) {
 				var url = _this.strSrcBase + elements.slice(0, i + 1).join('@');
 				$.get (url, function (data) {
 					var doc = data.documentElement;
@@ -226,10 +225,12 @@ function PTree ()
 		var eltDiv = this.GetDivFromIcon (eltIcon);
 		var className = eltIcon.attr ('class');
 		if (className == this.imgClassClosed) {
-			eltDiv.attr ('class', 'tree-node');
+			eltDiv.removeClass ('collapsed');
+			eltDiv.children ('.tree-node-children').slideDown ('fast');
 			eltIcon.attr ('class', this.GetIconClassName (eltDiv, false));
 		} else if (className == this.imgClassOpened) {
-			eltDiv.attr ('class', 'tree-node-collapsed');
+			eltDiv.addClass ('collapsed');
+			eltDiv.children ('.tree-node-children').slideUp ('fast');
 			eltIcon.attr ('class', this.GetIconClassName (eltDiv, true));
 		}
 	}
@@ -365,7 +366,7 @@ function PTree ()
 
 	this.IsExpanded = function (eltDiv)
 	{
-		return !eltDiv.hasClass ('tree-node-collapsed');
+		return !eltDiv.hasClass ('collapsed');
 	}
 
 	this.IsFirstChild = function (eltDiv)

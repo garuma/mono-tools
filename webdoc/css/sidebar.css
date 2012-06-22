@@ -1,24 +1,44 @@
-#contentList {
+.tree-container {
 	overflow-x: auto;
 }
 
-#contentList div {
+.tree-container div {
 	white-space: nowrap;
 }
 
-#contentList > div.tree-node:first-child > span {
+.tree-container > div.tree-node:first-child > span {
 	font-size: 130%;
 	line-height: 200%;
 }
 
-#contentList div i {
+.tree-container div i {
 	margin-right: 5px;
 }
 
-#contentList div a.label {
+.tree-container div a.label {
 	vertical-align: 2px;
 }
 
-#contentList .tree-node-collapsed .tree-node,.tree-node-collapsed .tree-node-collapsed {
+/*.tree-container div.collapsed div.tree-node {
 	display: none;
+}*/
+
+.tree-container > div.tree-node > span.tree-label {
+	margin-left: 0;
+}
+
+.tree-container > div.tree-node div.tree-node > span.tree-label {
+	margin-left: 0;
+}
+
+.tree-container > div.tree-node div.tree-node div.tree-node > span.tree-label {
+	margin-left: 16px;
+}
+
+.tree-container > div.tree-node div.tree-node div.tree-node div.tree-node > span.tree-label {
+	margin-left: 32px;
+}
+
+.tree-container > div.tree-node div.tree-node div.tree-node div.tree-node div.tree-node > span.tree-label {
+	margin-left: 48px;
 }
