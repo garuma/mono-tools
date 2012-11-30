@@ -18,8 +18,7 @@
     <script language="c#" runat="server">
 public string GetTitle ()
 {
-	return "Monodoc";
-//	return Global.help_tree.GetTitle (Request.QueryString ["link"]);
+return "Monkeydoc";
 }
 
 // Get the path to be shown in the content fram

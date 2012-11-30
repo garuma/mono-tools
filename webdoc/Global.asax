@@ -1,10 +1,10 @@
 <%@ Application ClassName="Mono.Website.Global" %>
-<%@ Import Namespace="Monodoc" %>
+<%@ Import Namespace="MonkeyDoc" %>
 <%@ Import Namespace="System.Web.Configuration" %>
 <%@ Import Namespace="System.Collections.Generic" %>
 <%@ Import Namespace="System.IO" %>
 <%@ Import Namespace="System.Linq" %>
-<%@ Assembly name="monodoc" %>
+<%@ Assembly name="monkeydoc" %>
 
 <script runat="server" language="c#" >
 
@@ -18,9 +18,9 @@ static Dictionary<ExternalResourceType, string> externalFooter = null;
 
 void Application_Start ()
 {
-	HelpSource.use_css = true;
-	HelpSource.FullHtml = false;
-	HelpSource.UseWebdocCache = true;
+	//HelpSource.use_css = true;
+	//HelpSource.FullHtml = false;
+	//HelpSource.UseWebdocCache = true;
 	var rootDir = WebConfigurationManager.AppSettings["MonodocRootDir"];
 	if (!string.IsNullOrEmpty (rootDir))
 		help_tree = RootTree.LoadTree (rootDir);
@@ -29,11 +29,11 @@ void Application_Start ()
 	ua = WebConfigurationManager.AppSettings["GoogleAnalytics"];
 	externalHeader = ParseExternalDefinition (WebConfigurationManager.AppSettings["ExternalHeader"]);
 	externalFooter = ParseExternalDefinition (WebConfigurationManager.AppSettings["ExternalFooter"]);
-	SettingsHandler.Settings.EnableEditing = false;
+	//SettingsHandler.Settings.EnableEditing = false;
 }
 
 public static readonly string kipunji_root_url = "http://docs.go-mono.com/";
-private static readonly string prefixes = "TNCFEMP";
+/*private static readonly string prefixes = "TNCFEMP";
 
 public static bool should_redirect_to_kipunji (string link)
 {
@@ -83,14 +83,14 @@ public static void redirect_to_kipunji (HttpContext context, string link)
 	      res.Append (link.Substring (2, link.Length - 2));
 
 	context.Response.RedirectPermanent (res.ToString ());
-}
+}*/
 
 public static string CreateTreeBootFragment ()
 {
 	var fragment = new System.Text.StringBuilder ();
 
-	for (int i = 0; i < help_tree.Nodes.Count; i++){
-		Node n = (Node)help_tree.Nodes [i];
+	for (int i = 0; i < help_tree.RootNode.Nodes.Count; i++){
+		Node n = (Node)help_tree.RootNode.Nodes [i];
 
 		string url = n.PublicUrl;
 
@@ -104,7 +104,7 @@ public static string CreateTreeBootFragment ()
 		else
 			fragment.Append ("null");
 	
-		if (i == help_tree.Nodes.Count-1)
+		if (i == help_tree.RootNode.Nodes.Count-1)
 			fragment.Append (", true");
 		else
 			fragment.Append (", false");
